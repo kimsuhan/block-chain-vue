@@ -2,7 +2,7 @@
   <div class="container-fluid p-4">
     <div class="row">
       <!-- 지갑 정보 카드 -->
-      <div class="col-lg-6 col-xl-4 mb-4">
+      <div class="col-lg-12 col-xl-12 mb-4">
         <div class="card shadow-lg border-0 h-100">
           <div class="card-header bg-primary text-white">
             <h5 class="card-title mb-0">
@@ -40,20 +40,59 @@
                 </div>
               </div>
 
-              <div class="row g-3">
-                <div class="col-6">
-                  <div class="border rounded p-3 text-center">
-                    <div class="text-muted small">ETH 잔액</div>
-                    <div class="h5 text-success mb-0">{{ balance }}</div>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="border rounded p-3 text-center">
-                    <div class="text-muted small">KSH 토큰</div>
-                    <div class="h5 text-primary mb-0">{{ tokenBalance }}</div>
-                  </div>
-                </div>
-              </div>
+              <table class="table table-bordered mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-center">코인</th>
+                    <th class="text-center">잔액</th>
+                    <th class="text-center">송금</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="text-center">ETH</td>
+                    <td class="text-center fw-bold text-success">
+                      {{ balance }}
+                    </td>
+                    <td class="text-center">
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        @click="openTransferModal('ETH')"
+                      >
+                        송금
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center">KSH</td>
+                    <td class="text-center fw-bold text-primary">
+                      {{ tokenBalance }}
+                    </td>
+                    <td class="text-center">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        @click="openTransferModal('KSH')"
+                      >
+                        송금
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center">LWH</td>
+                    <td class="text-center fw-bold text-primary">
+                      {{ lwhTokenBalance }}
+                    </td>
+                    <td class="text-center">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        @click="openTransferModal('LWH')"
+                      >
+                        송금
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
               <!-- <div class="mt-3">
                 <div class="d-grid gap-2">
@@ -71,42 +110,34 @@
       <!-- 토큰 정보 카드 -->
       <div class="col-lg-6 col-xl-4 mb-4">
         <div class="card shadow-lg border-0 h-100">
-          <div class="card-header bg-info text-white">
-            <h5 class="card-title mb-0">
+          <div class="card-header bg-info text-white py-2">
+            <h6 class="card-title mb-0">
               <i class="bi bi-coin me-2"></i>
               토큰 정보
-            </h5>
+            </h6>
           </div>
-          <div class="card-body">
-            <div class="text-center py-5">
-              <i class="bi bi-coin display-1 text-info mb-3"></i>
-              <h6 class="text-dark">KSH 토큰</h6>
-              <div class="h4 text-info mb-3">{{ totalSupply }} KSH</div>
-              <p class="text-muted small">총 발행량</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 빠른 액션 카드 -->
-      <div class="col-lg-6 col-xl-4 mb-4">
-        <div class="card shadow-lg border-0 h-100">
-          <div class="card-header bg-warning text-dark">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-lightning me-2"></i>
-              빠른 액션
-            </h5>
-          </div>
-          <div class="card-body">
-            <div class="d-grid gap-3">
-              <button @click="openTransferModal" class="btn btn-warning btn-lg">
-                <i class="bi bi-send me-2"></i>
-                토큰 전송
-              </button>
-              <button @click="refreshData" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-clockwise me-2"></i>
-                새로고침
-              </button>
+          <div class="card-body py-3">
+            <div class="row text-center">
+              <div class="col-6 border-end">
+                <div class="mb-2">
+                  <i class="bi bi-coin fs-2 text-info"></i>
+                </div>
+                <div class="fw-semibold">KSH</div>
+                <div class="text-info small mb-1">{{ totalSupply }}</div>
+                <div class="text-muted" style="font-size: 0.85em">
+                  총 발행량
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="mb-2">
+                  <i class="bi bi-coin fs-2 text-info"></i>
+                </div>
+                <div class="fw-semibold">LWH</div>
+                <div class="text-info small mb-1">{{ lwhTokenBalance }}</div>
+                <div class="text-muted" style="font-size: 0.85em">
+                  총 발행량
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -115,42 +146,48 @@
 
     <!-- 토큰 전송 모달 -->
     <div
-      v-if="showTransferModal"
-      class="modal fade show d-block"
+      class="modal fade"
+      id="transferModal"
       tabindex="-1"
-      @click="closeTransferModal"
+      aria-labelledby="transferModalLabel"
+      aria-hidden="true"
+      @click="handleModalBackdropClick"
     >
-      <div class="modal-dialog modal-dialog-centered" @click.stop>
-        <div class="modal-content shadow-lg">
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title fw-bold">토큰 전송</h5>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="transferModalLabel">
+              <i class="bi bi-send me-2"></i>
+              {{ selectedTokenType }} 전송
+            </h5>
             <button
               type="button"
               class="btn-close"
-              @click="closeTransferModal"
+              data-bs-dismiss="modal"
               aria-label="Close"
+              @click="closeTransferModal"
             ></button>
           </div>
 
-          <div class="modal-body pt-0">
+          <div class="modal-body">
             <div class="mb-3">
-              <label for="recipient" class="form-label fw-semibold"
-                >수신자 주소</label
-              >
+              <label for="recipient" class="form-label fw-semibold">
+                수신자 주소
+              </label>
               <input
                 id="recipient"
                 v-model="recipientAddress"
                 type="text"
                 placeholder="0x..."
-                class="form-control form-control-lg"
+                class="form-control"
                 :disabled="isTransferring"
               />
             </div>
 
             <div class="mb-3">
-              <label for="amount" class="form-label fw-semibold"
-                >전송 금액 (KSH)</label
-              >
+              <label for="amount" class="form-label fw-semibold">
+                전송 금액 ({{ selectedTokenType }})
+              </label>
               <input
                 id="amount"
                 v-model="transferAmount"
@@ -158,10 +195,12 @@
                 placeholder="0.0"
                 step="0.01"
                 min="0"
-                class="form-control form-control-lg"
+                class="form-control"
                 :disabled="isTransferring"
               />
-              <div class="form-text">보유 잔액: {{ tokenBalance }} KSH</div>
+              <div class="form-text">
+                보유 잔액: {{ getCurrentBalance() }} {{ selectedTokenType }}
+              </div>
             </div>
 
             <div v-if="transferError" class="alert alert-danger" role="alert">
@@ -170,10 +209,11 @@
             </div>
           </div>
 
-          <div class="modal-footer border-0 pt-0">
+          <div class="modal-footer">
             <button
               type="button"
               class="btn btn-secondary"
+              data-bs-dismiss="modal"
               @click="closeTransferModal"
               :disabled="isTransferring"
             >
@@ -196,21 +236,21 @@
           </div>
         </div>
       </div>
-      <div class="modal-backdrop fade show"></div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Modal } from "bootstrap";
 import { ethers } from "ethers";
 import { onMounted, ref } from "vue";
-import { erc20Abi } from "../const/erc20.abi.js";
 import {
   eventBus,
   globalProvider,
+  globalSigner,
   kshTokenContract,
+  lwhTokenContract,
   resetGlobalState,
-  setupContracts,
   setupGlobalProvider,
   updateWalletState,
   walletState,
@@ -222,13 +262,14 @@ const isConnected = ref(false);
 const balance = ref("");
 const totalSupply = ref(0);
 const tokenBalance = ref(0);
+const lwhTokenBalance = ref(0);
 
 // 토큰 전송 관련 상태
-const showTransferModal = ref(false);
 const recipientAddress = ref("");
 const transferAmount = ref("");
 const isTransferring = ref(false);
 const transferError = ref("");
+const selectedTokenType = ref("KSH");
 
 // 지갑 연결 함수
 const connectWallet = async () => {
@@ -255,18 +296,6 @@ const connectWallet = async () => {
         throw new Error("Provider 설정 실패");
       }
 
-      // 전역 Contract 설정
-      const contractSetup = setupContracts(
-        "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Token Address
-        null, // DEX Address (나중에 설정)
-        erc20Abi, // Token ABI
-        null // DEX ABI (나중에 설정)
-      );
-
-      if (!contractSetup) {
-        console.warn("Contract 설정 실패");
-      }
-
       // 잔액 조회
       await getBalance();
 
@@ -277,6 +306,7 @@ const connectWallet = async () => {
         balance: balance.value,
         tokenBalance: tokenBalance.value,
         totalSupply: totalSupply.value,
+        lwhTokenBalance: lwhTokenBalance.value,
       });
 
       console.log("지갑이 연결되었습니다:", account.value);
@@ -310,6 +340,10 @@ const getBalance = async () => {
       const balanceOf = await kshTokenContract.balanceOf(account.value);
       tokenBalance.value = ethers.formatEther(balanceOf.toString());
     }
+    if (lwhTokenContract && account.value) {
+      const balanceOf = await lwhTokenContract.balanceOf(account.value);
+      lwhTokenBalance.value = ethers.formatEther(balanceOf.toString());
+    }
 
     // 전역 상태 업데이트
     updateWalletState({
@@ -318,6 +352,7 @@ const getBalance = async () => {
       balance: balance.value,
       tokenBalance: tokenBalance.value,
       totalSupply: totalSupply.value,
+      lwhTokenBalance: lwhTokenBalance.value,
     });
   } catch (error) {
     console.error("잔액 조회 실패:", error);
@@ -372,7 +407,8 @@ const transferTokens = async () => {
   }
 
   // 잔액 확인
-  if (amount > parseFloat(tokenBalance.value)) {
+  const currentBalance = getCurrentBalance();
+  if (amount > parseFloat(currentBalance)) {
     transferError.value = "전송하려는 금액이 잔액보다 큽니다.";
     return;
   }
@@ -381,23 +417,31 @@ const transferTokens = async () => {
     isTransferring.value = true;
     transferError.value = "";
 
-    // Wei 단위로 변환
-    const amountWei = ethers.parseEther(String(transferAmount.value));
+    let tx;
 
-    console.log(amountWei);
-
-    // 토큰 전송 트랜잭션 실행
-    const tx = await kshTokenContract.transfer(
-      recipientAddress.value,
-      amountWei
-    );
+    if (selectedTokenType.value === "ETH") {
+      // ETH 전송
+      const amountWei = ethers.parseEther(String(transferAmount.value));
+      tx = await globalSigner.sendTransaction({
+        to: recipientAddress.value,
+        value: amountWei,
+      });
+    } else if (selectedTokenType.value === "KSH") {
+      // KSH 토큰 전송
+      const amountWei = ethers.parseEther(String(transferAmount.value));
+      tx = await kshTokenContract.transfer(recipientAddress.value, amountWei);
+    } else if (selectedTokenType.value === "LWH") {
+      // LWH 토큰 전송
+      const amountWei = ethers.parseEther(String(transferAmount.value));
+      tx = await lwhTokenContract.transfer(recipientAddress.value, amountWei);
+    }
 
     // 트랜잭션 완료 대기
     await tx.wait();
 
     // 성공 메시지
     alert(
-      `토큰 전송이 완료되었습니다!\n수신자: ${recipientAddress.value}\n금액: ${transferAmount.value} KSH`
+      `토큰 전송이 완료되었습니다!\n수신자: ${recipientAddress.value}\n금액: ${transferAmount.value} ${selectedTokenType.value}`
     );
 
     // 모달 닫기 및 입력값 초기화
@@ -414,16 +458,91 @@ const transferTokens = async () => {
 };
 
 // 전송 모달 열기
-const openTransferModal = () => {
-  showTransferModal.value = true;
+const openTransferModal = (tokenType) => {
+  selectedTokenType.value = tokenType;
   transferError.value = "";
   recipientAddress.value = "";
   transferAmount.value = "";
+
+  // Bootstrap 모달 열기
+  try {
+    const modalElement = document.getElementById("transferModal");
+    if (modalElement) {
+      const modal = new Modal(modalElement);
+      modal.show();
+    }
+  } catch (error) {
+    console.error("Bootstrap 모달 열기 실패:", error);
+    // fallback: 직접 스타일로 모달 표시
+    const modalElement = document.getElementById("transferModal");
+    if (modalElement) {
+      modalElement.classList.add("show", "d-block");
+      modalElement.setAttribute("aria-hidden", "false");
+      // backdrop 추가
+      const backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop fade show";
+      backdrop.id = "modalBackdrop";
+      document.body.appendChild(backdrop);
+    }
+  }
+};
+
+// 현재 선택된 토큰의 잔액 반환
+const getCurrentBalance = () => {
+  switch (selectedTokenType.value) {
+    case "ETH":
+      return balance.value;
+    case "KSH":
+      return tokenBalance.value;
+    case "LWH":
+      return lwhTokenBalance.value;
+    default:
+      return "0";
+  }
+};
+
+// 모달 backdrop 클릭 핸들러
+const handleModalBackdropClick = (event) => {
+  if (event.target.id === "transferModal") {
+    closeTransferModal();
+  }
 };
 
 // 전송 모달 닫기
 const closeTransferModal = () => {
-  showTransferModal.value = false;
+  // Bootstrap 모달 닫기
+  try {
+    const modalElement = document.getElementById("transferModal");
+    if (modalElement) {
+      const modal = Modal.getInstance(modalElement);
+      if (modal) {
+        modal.hide();
+      } else {
+        // fallback: 직접 스타일로 모달 숨기기
+        modalElement.classList.remove("show", "d-block");
+        modalElement.setAttribute("aria-hidden", "true");
+        // backdrop 제거
+        const backdrop = document.getElementById("modalBackdrop");
+        if (backdrop) {
+          backdrop.remove();
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Bootstrap 모달 닫기 실패:", error);
+    // fallback: 직접 스타일로 모달 숨기기
+    const modalElement = document.getElementById("transferModal");
+    if (modalElement) {
+      modalElement.classList.remove("show", "d-block");
+      modalElement.setAttribute("aria-hidden", "true");
+    }
+    // backdrop 제거
+    const backdrop = document.getElementById("modalBackdrop");
+    if (backdrop) {
+      backdrop.remove();
+    }
+  }
+
   transferError.value = "";
   recipientAddress.value = "";
   transferAmount.value = "";
@@ -474,17 +593,6 @@ onMounted(async () => {
       const providerSetup = await setupGlobalProvider(account.value);
       if (!providerSetup) {
         throw new Error("Provider 설정 실패");
-      }
-
-      const contractSetup = setupContracts(
-        "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-        null,
-        erc20Abi,
-        null
-      );
-
-      if (!contractSetup) {
-        console.warn("Contract 설정 실패");
       }
 
       // 잔액 새로고침

@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { ref } from "vue";
+import { erc20Abi } from "../const/erc20.abi.js";
 // 전역 상태 - 브라우저 새로고침 시에도 유지되도록 localStorage 사용
 const getInitialState = () => {
   try {
@@ -12,6 +13,7 @@ const getInitialState = () => {
         balance: parsed.balance || "",
         tokenBalance: parsed.tokenBalance || "",
         totalSupply: parsed.totalSupply || 0,
+        lwhTokenBalance: parsed.lwhTokenBalance || 0,
       };
     }
   } catch (error) {
@@ -24,6 +26,7 @@ const getInitialState = () => {
     balance: "",
     tokenBalance: "",
     totalSupply: 0,
+    lwhTokenBalance: 0,
   };
 };
 
@@ -35,6 +38,7 @@ export let globalSigner;
 
 // 전역 Contract 인스턴스들
 export let kshTokenContract;
+export let lwhTokenContract;
 export let dexContract;
 
 // 이벤트 버스
@@ -85,6 +89,17 @@ export const setupGlobalProvider = async (account) => {
 
     // Signer 설정
     globalSigner = await globalProvider.getSigner(account);
+    kshTokenContract = new ethers.Contract(
+      "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      erc20Abi,
+      globalSigner
+    );
+
+    lwhTokenContract = new ethers.Contract(
+      "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      erc20Abi,
+      globalSigner
+    );
 
     console.log("전역 Provider와 Signer 설정 완료");
     return true;
@@ -94,41 +109,12 @@ export const setupGlobalProvider = async (account) => {
   }
 };
 
-// 전역 Contract 설정 함수
-export const setupContracts = (tokenAddress, dexAddress, tokenAbi, dexAbi) => {
-  try {
-    if (globalSigner) {
-      // Token Contract 설정
-      if (tokenAddress && tokenAbi) {
-        kshTokenContract = new ethers.Contract(
-          tokenAddress,
-          tokenAbi,
-          globalSigner
-        );
-        console.log("Token Contract 설정 완료");
-      }
-
-      // DEX Contract 설정
-      if (dexAddress && dexAbi) {
-        dexContract = new ethers.Contract(dexAddress, dexAbi, globalSigner);
-        console.log("DEX Contract 설정 완료");
-      }
-
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error("Contract 설정 실패:", error);
-    return false;
-  }
-};
-
 // 전역 상태 초기화 함수
 export const resetGlobalState = () => {
   globalProvider = null;
   globalSigner = null;
-  globalTokenContract = null;
   kshTokenContract = null;
+  lwhTokenContract = null;
   dexContract = null;
 
   updateWalletState({
@@ -137,5 +123,6 @@ export const resetGlobalState = () => {
     balance: "",
     tokenBalance: "",
     totalSupply: 0,
+    lwhTokenBalance: 0,
   });
 };
